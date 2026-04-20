@@ -27,7 +27,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"gitlab.snapp.ir/snappcloud/kubernetes-webhooks/test/utils"
+	"github.com/snapp-incubator/kubernetes-webhooks/test/utils"
 )
 
 // namespace where the project is deployed in

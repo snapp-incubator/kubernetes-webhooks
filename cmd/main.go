@@ -22,7 +22,7 @@ import (
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
-	webhookv1 "gitlab.snapp.ir/snappcloud/kubernetes-webhooks/internal/webhook/v1"
+	webhookv1 "github.com/snapp-incubator/kubernetes-webhooks/internal/webhook/v1"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -168,7 +168,7 @@ func main() {
 		WebhookServer:          webhookServer,
 		HealthProbeBindAddress: probeAddr,
 		LeaderElection:         enableLeaderElection,
-		LeaderElectionID:       "e494e395.gitlab.snapp.ir",
+		LeaderElectionID:       "e494e395.github.com",
 		// LeaderElectionReleaseOnCancel defines if the leader should step down voluntarily
 		// when the Manager ends. This requires the binary to immediately end when the
 		// Manager is stopped, otherwise, this setting is unsafe. Setting this significantly

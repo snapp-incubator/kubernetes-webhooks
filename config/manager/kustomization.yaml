@@ -5,4 +5,4 @@ kind: Kustomization
 images:
 - name: controller
   newName: registry.teh-1.snappcloud.io/library/kubernetes-webhooks
-  newTag: v0.1.1
+  newTag: v0.1.3

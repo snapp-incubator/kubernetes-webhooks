@@ -1,4 +1,4 @@
-module gitlab.snapp.ir/snappcloud/kubernetes-webhooks
+module github.com/snapp-incubator/kubernetes-webhooks
 
 go 1.26.2
 

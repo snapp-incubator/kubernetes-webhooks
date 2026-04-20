@@ -15,11 +15,9 @@ linters:
     - lll
     - misspell
     - nakedret
-    - prealloc
     - revive
     - staticcheck
     - unconvert
-    - unparam
     - unused
   settings:
     revive:

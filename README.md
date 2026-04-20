@@ -7,57 +7,30 @@ Snappcloud Kubernetes webhooks
 We mainly use Kyverno for our Kubernetes webhooks.
 This project contains those webhooks that can't be implmented with Kyverno.
 
-## Project Distribution
-
-Following the options to release and provide this solution to the users.
-
-### By providing a bundle with all YAML files
-
-1. Build the installer for the image built and published in the registry:
-
-```sh
-make build-installer IMG=<some-registry>/kubernetes-webhooks:tag
-```
-
-**NOTE:** The makefile target mentioned above generates an 'install.yaml'
-file in the dist directory. This file contains all the resources built
-with Kustomize, which are necessary to install this project without its
-dependencies.
-
-2. Using the installer
-
-Users can just run 'kubectl apply -f <URL for YAML BUNDLE>' to install
-the project, i.e.:
-
-```sh
-kubectl apply -f https://raw.githubusercontent.com/<org>/kubernetes-webhooks/<tag or branch>/dist/install.yaml
-```
-
-### By providing a Helm Chart
-
-1. Build the chart using the optional helm plugin
-
-```sh
-operator-sdk edit --plugins=helm/v1-alpha
-```
-
-2. See that a chart was generated under 'dist/chart', and users
-   can obtain this solution from there.
-
-**NOTE:** If you change the project, you need to update the Helm Chart
-using the same command above to sync the latest changes. Furthermore,
-if you create webhooks, you need to use the above command with
-the '--force' flag and manually ensure that any custom configuration
-previously added to 'dist/chart/values.yaml' or 'dist/chart/manager/manager.yaml'
-is manually re-applied afterwards.
-
 ## Contributing
 
-### Conventions
+### Generating Helm Chart
 
-- **Don't** create a separate webhook per rule. Example:
-    - Bad:
-        - service-label-required webhook
-        - service-label-format webhook
-    - Good:
-        - one ServiceValidator handling all Service rules
+To re-generate the Helm chart, run the following command.
+Publising the helm chart is done through the gitlab CI pipeline.
+
+```bash
+IMG=github.com/library/kubernetes-webhooks:<new-tag> make helm
+```
+
+### Creating a new webhook
+
+When creating a new webhook, please follow these guidelines:
+
+- We only generate a new webhook for a new GVK(group, version, kind) that we want to validate, default or mutate. If a webhook already exists for the
+  GVK, we add the logic to the existing webhook.
+
+- Use the following command to generate the boilerplate code for a new validating webhook. For more details checkout
+  the [operatork-sdk documentation](https://sdk.operatorframework.io/docs/building-operators/golang/webhook/#create-validation-webhook).
+
+```bash
+operator-sdk create webhook --group <DesiredGroup> --version <DesiredVersion> --kind <DesiredKind> --defaulting --programmatic-validation
+```
+
+- The helm chart can be published through a manual GitHub workflow. Run the workflow
+  from [GitHub actions](https://github.com/snapp-incubator/kubernetes-webhooks/actions/workflows/release-helm-chart.yaml).
