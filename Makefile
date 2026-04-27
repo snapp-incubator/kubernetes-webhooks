@@ -262,7 +262,7 @@ $(HELMIFY): $(LOCALBIN)
     
 helm: manifests kustomize helmify
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
-	$(KUSTOMIZE) build config/default | $(HELMIFY)
+	$(KUSTOMIZE) build config/default | $(HELMIFY) charts/kubernetes-webhooks
 
 .PHONY: setup-envtest
 setup-envtest: envtest ## Download the binaries required for ENVTEST in the local bin directory.

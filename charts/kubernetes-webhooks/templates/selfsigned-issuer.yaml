@@ -1,0 +1,8 @@
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ include "kubernetes-webhooks.fullname" . }}-selfsigned-issuer
+  labels:
+  {{- include "kubernetes-webhooks.labels" . | nindent 4 }}
+spec:
+  selfSigned: {}

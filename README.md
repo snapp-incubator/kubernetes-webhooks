@@ -15,8 +15,11 @@ To re-generate the Helm chart, run the following command.
 Publising the helm chart is done through the gitlab CI pipeline.
 
 ```bash
-IMG=github.com/library/kubernetes-webhooks:<new-tag> make helm
+IMG=ghcr.io/snapp-incubator/kubernetes-webhooks:<new-tag> make helm
 ```
+
+The `release-helm-chart` action will automatically release the Helm chart to the GitHub package registry when
+a change is detected in the `main` branch.
 
 ### Creating a new webhook
 
@@ -31,6 +34,3 @@ When creating a new webhook, please follow these guidelines:
 ```bash
 operator-sdk create webhook --group <DesiredGroup> --version <DesiredVersion> --kind <DesiredKind> --defaulting --programmatic-validation
 ```
-
-- The helm chart can be published through a manual GitHub workflow. Run the workflow
-  from [GitHub actions](https://github.com/snapp-incubator/kubernetes-webhooks/actions/workflows/release-helm-chart.yaml).
