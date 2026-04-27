@@ -1,0 +1,6 @@
+apiVersion: v2
+name: kubernetes-webhooks
+description: A Helm chart for SnappCloud Kubernetes Webhooks
+type: application
+version: 0.1.0
+appVersion: "0.3.0"

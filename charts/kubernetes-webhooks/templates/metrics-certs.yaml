@@ -1,0 +1,15 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "kubernetes-webhooks.fullname" . }}-metrics-certs
+  labels:
+  {{- include "kubernetes-webhooks.labels" . | nindent 4 }}
+spec:
+  dnsNames:
+  - '{{ include "kubernetes-webhooks.fullname" . }}-SERVICE_NAME.SERVICE_NAMESPACE.svc'
+  - '{{ include "kubernetes-webhooks.fullname" . }}-SERVICE_NAME.SERVICE_NAMESPACE.svc.{{
+    .Values.kubernetesClusterDomain }}'
+  issuerRef:
+    kind: Issuer
+    name: '{{ include "kubernetes-webhooks.fullname" . }}-selfsigned-issuer'
+  secretName: metrics-server-cert
