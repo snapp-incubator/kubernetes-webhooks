@@ -1,0 +1,14 @@
+apiVersion: v1
+entries:
+  kubernetes-webhooks:
+  - apiVersion: v2
+    appVersion: 0.1.0
+    created: "2026-04-27T12:33:01.204962132Z"
+    description: A Helm chart for Kubernetes
+    digest: 67530174bd1d4dee91db9677482de059248b5bc682b302700d675d9eaba45075
+    name: kubernetes-webhooks
+    type: application
+    urls:
+    - https://github.com/snapp-incubator/kubernetes-webhooks/releases/download/kubernetes-webhooks-0.1.0/kubernetes-webhooks-0.1.0.tgz
+    version: 0.1.0
+generated: "2026-04-27T12:33:01.204972157Z"
