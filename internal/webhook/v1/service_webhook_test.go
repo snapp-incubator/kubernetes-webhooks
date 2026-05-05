@@ -126,7 +126,7 @@ var _ = Describe("Service Webhook", func() {
 					Name:      "test-svc",
 					Namespace: "default",
 					Labels: map[string]string{
-						"network.snappcloud.io/address-pool": "my-pool",
+						"network.snappcloud.io/address-pool": "my",
 					},
 					Annotations: map[string]string{
 						"io.cilium/lb-ipam-ips": "10.0.0.5",
@@ -161,7 +161,7 @@ var _ = Describe("Service Webhook", func() {
 					Name:      "test-svc",
 					Namespace: "default",
 					Labels: map[string]string{
-						"network.snappcloud.io/address-pool": "my-pool",
+						"network.snappcloud.io/address-pool": "my",
 					},
 					Annotations: map[string]string{
 						"io.cilium/lb-ipam-ips": "10.0.0.5,10.0.0.10",
@@ -196,7 +196,7 @@ var _ = Describe("Service Webhook", func() {
 					Name:      "test-svc",
 					Namespace: "default",
 					Labels: map[string]string{
-						"network.snappcloud.io/address-pool": "my-pool",
+						"network.snappcloud.io/address-pool": "my",
 					},
 					Annotations: map[string]string{
 						"io.cilium/lb-ipam-ips": "10.0.0.5,192.168.1.1",
@@ -232,7 +232,7 @@ var _ = Describe("Service Webhook", func() {
 					Name:      "test-svc",
 					Namespace: "default",
 					Labels: map[string]string{
-						"network.snappcloud.io/address-pool": "my-pool",
+						"network.snappcloud.io/address-pool": "my",
 					},
 					Annotations: map[string]string{
 						"lbipam.cilium.io/ips": "10.0.0.5",
@@ -267,7 +267,7 @@ var _ = Describe("Service Webhook", func() {
 					Name:      "test-svc",
 					Namespace: "default",
 					Labels: map[string]string{
-						"network.snappcloud.io/address-pool": "my-pool",
+						"network.snappcloud.io/address-pool": "my",
 					},
 					Annotations: map[string]string{
 						"lbipam.cilium.io/ips": "10.0.0.5,10.0.0.10",
@@ -302,7 +302,7 @@ var _ = Describe("Service Webhook", func() {
 					Name:      "test-svc",
 					Namespace: "default",
 					Labels: map[string]string{
-						"network.snappcloud.io/address-pool": "my-pool",
+						"network.snappcloud.io/address-pool": "my",
 					},
 					Annotations: map[string]string{
 						"lbipam.cilium.io/ips": "10.0.0.5,192.168.1.1",
@@ -326,7 +326,7 @@ var _ = Describe("Service Webhook", func() {
 					Name:      "test-svc",
 					Namespace: "default",
 					Labels: map[string]string{
-						"network.snappcloud.io/address-pool": "my-pool",
+						"network.snappcloud.io/address-pool": "my",
 					},
 					Annotations: map[string]string{
 						"io.cilium/lb-ipam-ips": "10.0.0.5,192.168.1.1",
@@ -348,7 +348,7 @@ var _ = Describe("Service Webhook", func() {
 					Name:      "test-svc",
 					Namespace: "default",
 					Labels: map[string]string{
-						"network.snappcloud.io/address-pool": "my-pool",
+						"network.snappcloud.io/address-pool": "my",
 					},
 					Annotations: map[string]string{
 						"io.cilium/lb-ipam-ips": "10.0.0.5",
@@ -372,7 +372,7 @@ var _ = Describe("Service Webhook", func() {
 					Name:      "test-svc",
 					Namespace: "default",
 					Labels: map[string]string{
-						"network.snappcloud.io/address-pool": "my-pool",
+						"network.snappcloud.io/address-pool": "my",
 					},
 					Annotations: map[string]string{
 						"lbipam.cilium.io/ips": "10.0.0.5",
@@ -463,7 +463,7 @@ var _ = Describe("Service Webhook", func() {
 					Name:      "test-svc",
 					Namespace: "default",
 					Labels: map[string]string{
-						"network.snappcloud.io/address-pool": "my-pool",
+						"network.snappcloud.io/address-pool": "my",
 					},
 				},
 				Spec: corev1.ServiceSpec{
@@ -498,7 +498,7 @@ var _ = Describe("Service Webhook", func() {
 					Name:      "test-svc",
 					Namespace: "default",
 					Labels: map[string]string{
-						"network.snappcloud.io/address-pool": "my-pool",
+						"network.snappcloud.io/address-pool": "my",
 					},
 				},
 				Spec: corev1.ServiceSpec{

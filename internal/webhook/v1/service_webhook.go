@@ -166,6 +166,8 @@ func (v *ServiceCustomValidator) fetchPoolBlocks(ctx context.Context, service *c
 	poolName := service.GetLabels()[addressPoolLabel]
 	if poolName == "" {
 		poolName = defaultAddressPool
+	} else {
+		poolName = poolName + "-pool"
 	}
 
 	ipPool := &ciliumv2alpha1.CiliumLoadBalancerIPPool{}
