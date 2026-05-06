@@ -320,7 +320,18 @@ var _ = Describe("Service Webhook", func() {
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("192.168.1.1"))
 		})
-		It("Should reject creation when both ipam annotations are set", func() {
+		It("Should allow creation when both ipam annotations are set to the same value", func() {
+			pool := &ciliumv2alpha1.CiliumLoadBalancerIPPool{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "my-pool",
+				},
+				Spec: ciliumv2alpha1.CiliumLoadBalancerIPPoolSpec{
+					Blocks: []ciliumv2alpha1.CiliumLoadBalancerIPPoolIPBlock{
+						{Cidr: "10.0.0.0/24"},
+					},
+				},
+			}
+
 			obj := &corev1.Service{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "test-svc",
@@ -329,7 +340,32 @@ var _ = Describe("Service Webhook", func() {
 						"network.snappcloud.io/address-pool": "my",
 					},
 					Annotations: map[string]string{
-						"io.cilium/lb-ipam-ips": "10.0.0.5,192.168.1.1",
+						"io.cilium/lb-ipam-ips": "10.0.0.5,10.0.0.10",
+						"lbipam.cilium.io/ips":  "10.0.0.10,10.0.0.5",
+					},
+				},
+			}
+
+			scheme := runtime.NewScheme()
+			Expect(ciliumv2alpha1.AddToScheme(scheme)).To(Succeed())
+
+			validator := ServiceCustomValidator{
+				client: fake.NewClientBuilder().WithScheme(scheme).WithObjects(pool).Build(),
+			}
+			_, err := validator.ValidateCreate(ctx, obj)
+			Expect(err).NotTo(HaveOccurred())
+		})
+
+		It("Should reject creation when the two ipam annotations are set to different values", func() {
+			obj := &corev1.Service{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-svc",
+					Namespace: "default",
+					Labels: map[string]string{
+						"network.snappcloud.io/address-pool": "my",
+					},
+					Annotations: map[string]string{
+						"io.cilium/lb-ipam-ips": "10.0.0.4,192.168.1.1",
 						"lbipam.cilium.io/ips":  "10.0.0.4,192.168.1.2",
 					},
 				},
@@ -339,10 +375,22 @@ var _ = Describe("Service Webhook", func() {
 			}
 			_, err := validator.ValidateCreate(ctx, obj)
 			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("at most one"))
+			Expect(err.Error()).To(ContainSubstring(lbIpamIpsAnnotation))
+			Expect(err.Error()).To(ContainSubstring(lbIpamIpsAnnotationAlias))
 		})
 
-		It("Should reject creation when lbIpamIps annotation and loadBalancerIP are both set", func() {
+		It("Should allow creation when lbIpamIps annotation and loadBalancerIP are set to the same value", func() {
+			pool := &ciliumv2alpha1.CiliumLoadBalancerIPPool{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "my-pool",
+				},
+				Spec: ciliumv2alpha1.CiliumLoadBalancerIPPoolSpec{
+					Blocks: []ciliumv2alpha1.CiliumLoadBalancerIPPoolIPBlock{
+						{Cidr: "10.0.0.0/24"},
+					},
+				},
+			}
+
 			obj := &corev1.Service{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "test-svc",
@@ -351,11 +399,38 @@ var _ = Describe("Service Webhook", func() {
 						"network.snappcloud.io/address-pool": "my",
 					},
 					Annotations: map[string]string{
-						"io.cilium/lb-ipam-ips": "10.0.0.5",
+						"io.cilium/lb-ipam-ips": "10.0.0.5,10.0.0.3",
 					},
 				},
 				Spec: corev1.ServiceSpec{
-					LoadBalancerIP: "10.0.0.5",
+					LoadBalancerIP: "10.0.0.3,10.0.0.5",
+				},
+			}
+
+			scheme := runtime.NewScheme()
+			Expect(ciliumv2alpha1.AddToScheme(scheme)).To(Succeed())
+
+			validator := ServiceCustomValidator{
+				client: fake.NewClientBuilder().WithScheme(scheme).WithObjects(pool).Build(),
+			}
+			_, err := validator.ValidateCreate(ctx, obj)
+			Expect(err).NotTo(HaveOccurred())
+		})
+
+		It("Should reject creation when lbIpamIps annotation and loadBalancerIP are set to different values", func() {
+			obj := &corev1.Service{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-svc",
+					Namespace: "default",
+					Labels: map[string]string{
+						"network.snappcloud.io/address-pool": "my",
+					},
+					Annotations: map[string]string{
+						"io.cilium/lb-ipam-ips": "10.0.0.5,192.168.1.2",
+					},
+				},
+				Spec: corev1.ServiceSpec{
+					LoadBalancerIP: "10.0.0.6,192.168.1.2",
 				},
 			}
 			validator := ServiceCustomValidator{
@@ -363,10 +438,22 @@ var _ = Describe("Service Webhook", func() {
 			}
 			_, err := validator.ValidateCreate(ctx, obj)
 			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("at most one"))
+			Expect(err.Error()).To(ContainSubstring(lbIpamIpsAnnotation))
+			Expect(err.Error()).To(ContainSubstring("spec.loadBalancerIP"))
 		})
 
-		It("Should reject creation when lbIpamIps alias annotation and loadBalancerIP are both set", func() {
+		It("Should allow update when lbIpamIps alias annotation and loadBalancerIP are set to the same value", func() {
+			pool := &ciliumv2alpha1.CiliumLoadBalancerIPPool{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "my-pool",
+				},
+				Spec: ciliumv2alpha1.CiliumLoadBalancerIPPoolSpec{
+					Blocks: []ciliumv2alpha1.CiliumLoadBalancerIPPoolIPBlock{
+						{Cidr: "10.0.0.0/24"},
+					},
+				},
+			}
+
 			obj := &corev1.Service{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "test-svc",
@@ -382,12 +469,40 @@ var _ = Describe("Service Webhook", func() {
 					LoadBalancerIP: "10.0.0.5",
 				},
 			}
+
+			scheme := runtime.NewScheme()
+			Expect(ciliumv2alpha1.AddToScheme(scheme)).To(Succeed())
+
+			validator := ServiceCustomValidator{
+				client: fake.NewClientBuilder().WithScheme(scheme).WithObjects(pool).Build(),
+			}
+			_, err := validator.ValidateUpdate(ctx, nil, obj)
+			Expect(err).NotTo(HaveOccurred())
+		})
+
+		It("Should reject creation when lbIpamIps alias annotation and loadBalancerIP are set to different values", func() {
+			obj := &corev1.Service{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-svc",
+					Namespace: "default",
+					Labels: map[string]string{
+						"network.snappcloud.io/address-pool": "my",
+					},
+					Annotations: map[string]string{
+						"lbipam.cilium.io/ips": "10.0.0.5",
+					},
+				},
+				Spec: corev1.ServiceSpec{
+					LoadBalancerIP: "10.0.0.6",
+				},
+			}
 			validator := ServiceCustomValidator{
 				client: fake.NewClientBuilder().Build(),
 			}
 			_, err := validator.ValidateCreate(ctx, obj)
 			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("at most one"))
+			Expect(err.Error()).To(ContainSubstring(lbIpamIpsAnnotationAlias))
+			Expect(err.Error()).To(ContainSubstring("spec.loadBalancerIP"))
 		})
 	})
 
