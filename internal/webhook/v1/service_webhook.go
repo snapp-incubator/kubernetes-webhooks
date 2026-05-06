@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"net/netip"
+	"slices"
 	"strings"
 
 	ciliumv2alpha1 "github.com/cilium/cilium/pkg/k8s/apis/cilium.io/v2alpha1"
@@ -100,30 +101,27 @@ func (v *ServiceCustomValidator) ValidateDelete(ctx context.Context, obj runtime
 // the address-pool label is absent.
 func (v *ServiceCustomValidator) validateIPSources(ctx context.Context, service *corev1.Service) (admission.Warnings, error) {
 	annotations := service.GetAnnotations()
-	ipamOriginalRaw := annotations[lbIpamIpsAnnotation]
-	ipamAliasRaw := annotations[lbIpamIpsAnnotationAlias]
-	loadBalancerIP := strings.TrimSpace(service.Spec.LoadBalancerIP)
-
-	// Count how many sources are set.
-	setCount := 0
-	if ipamOriginalRaw != "" {
-		setCount++
+	if annotations == nil {
+		annotations = map[string]string{}
 	}
-	if ipamAliasRaw != "" {
-		setCount++
-	}
-	if loadBalancerIP != "" {
-		setCount++
+	sources := []ipSourceRequest{
+		{name: lbIpamIpsAnnotation, ips: parseRequestedIPs(annotations[lbIpamIpsAnnotation])},
+		{name: lbIpamIpsAnnotationAlias, ips: parseRequestedIPs(annotations[lbIpamIpsAnnotationAlias])},
+		{name: "spec.loadBalancerIP", ips: parseRequestedIPs(service.Spec.LoadBalancerIP)},
 	}
 
-	if setCount > 1 {
-		return nil, fmt.Errorf(
-			"at most one of %s, %s, and spec.loadBalancerIP may be set",
-			lbIpamIpsAnnotation, lbIpamIpsAnnotationAlias,
-		)
+	var configuredSources []ipSourceRequest
+	for _, source := range sources {
+		if len(source.ips) > 0 {
+			configuredSources = append(configuredSources, source)
+		}
 	}
-	if setCount == 0 {
+
+	if len(configuredSources) == 0 {
 		return nil, nil
+	}
+	if err := validateMatchingIPSources(configuredSources); err != nil {
+		return nil, err
 	}
 
 	cidrs, ranges, poolName, err := v.fetchPoolBlocks(ctx, service)
@@ -131,23 +129,7 @@ func (v *ServiceCustomValidator) validateIPSources(ctx context.Context, service 
 		return nil, err
 	}
 
-	// Collect the IPs to validate.
-	var ipsToCheck []string
-	if loadBalancerIP != "" {
-		ipsToCheck = []string{loadBalancerIP}
-	} else {
-		raw := ipamOriginalRaw
-		if raw == "" {
-			raw = ipamAliasRaw
-		}
-		for _, s := range strings.Split(raw, ",") {
-			if t := strings.TrimSpace(s); t != "" {
-				ipsToCheck = append(ipsToCheck, t)
-			}
-		}
-	}
-
-	for _, ip := range ipsToCheck {
+	for _, ip := range configuredSources[0].ips {
 		if !isIPInPool(ip, cidrs, ranges) {
 			return nil, fmt.Errorf(
 				"IP %s is not within any block of CiliumLoadBalancerIPPool %q",
@@ -157,6 +139,50 @@ func (v *ServiceCustomValidator) validateIPSources(ctx context.Context, service 
 	}
 
 	return nil, nil
+}
+
+func validateMatchingIPSources(sources []ipSourceRequest) error {
+	if len(sources) < 2 {
+		return nil
+	}
+
+	baseline := sources[0]
+	for _, source := range sources[1:] {
+		if !equalRequestedIPs(baseline.ips, source.ips) {
+			return fmt.Errorf(
+				"when multiple IP sources are set, %s and %s must specify the same IP value(s)",
+				baseline.name,
+				source.name,
+			)
+		}
+	}
+
+	return nil
+}
+
+func parseRequestedIPs(raw string) []string {
+	var ips []string
+	for _, part := range strings.Split(raw, ",") {
+		if ip := strings.TrimSpace(part); ip != "" {
+			ips = append(ips, ip)
+		}
+	}
+
+	return ips
+}
+
+func equalRequestedIPs(left, right []string) bool {
+	if len(left) != len(right) {
+		return false
+	}
+
+	// Create new slices for sorting to keep order of original slices
+	leftSorted := append([]string(nil), left...)
+	rightSorted := append([]string(nil), right...)
+	slices.Sort(leftSorted)
+	slices.Sort(rightSorted)
+
+	return slices.Equal(leftSorted, rightSorted)
 }
 
 // fetchPoolBlocks retrieves the CiliumLoadBalancerIPPool named by the service's
@@ -246,4 +272,9 @@ func isIPInPool(ipStr string, cidrs []*net.IPNet, ranges []ipRange) bool {
 // ipRange holds a parsed start/stop address range.
 type ipRange struct {
 	start, end netip.Addr
+}
+
+type ipSourceRequest struct {
+	name string
+	ips  []string
 }
